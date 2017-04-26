@@ -17,11 +17,18 @@ class PostCell: UITableViewCell {
     @IBOutlet weak var numberOfLikes: UILabel!
     @IBOutlet weak var caption: UITextView!
     
-    
+    var post: Post!
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        // Initialization code
+    }
+    
+    func configureCell (post: Post) {
+        
+        self.post = post
+        self.caption.text = post.caption
+        self.numberOfLikes.text = "\(post.likes)"
+        
     }
 
 

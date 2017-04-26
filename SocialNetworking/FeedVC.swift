@@ -10,15 +10,22 @@ import UIKit
 import SwiftKeychainWrapper
 import Firebase
 
-class FeedVC: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class FeedVC: UIViewController, UITableViewDataSource, UITableViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
     @IBOutlet weak var tableView: UITableView!
     
     var posts = [Post]()
+    var imagePicker: UIImagePickerController!
+    @IBOutlet weak var imageAdd: formatImageView!
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        imagePicker = UIImagePickerController()
+        imagePicker.allowsEditing = true
+        imagePicker.delegate = self
+        
         tableView.delegate = self
         tableView.dataSource = self
         
@@ -45,7 +52,23 @@ class FeedVC: UIViewController, UITableViewDataSource, UITableViewDelegate {
         })
         
     }
+    
+    //Once image is selected > get rid of image picker
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        if let image = info[UIImagePickerControllerEditedImage] as? UIImage {
+            imageAdd.image = image
+        } else {
+            print ("Image was not selected")
+        }
+        dismiss(animated: true, completion: nil)
+    }
 
+    
+    @IBAction func addImageTapped(_ sender: Any) {
+        present(imagePicker, animated: true, completion: nil)
+        
+    }
+    
     @IBAction func signOutTapped(_ sender: Any) {
         
         //Signing out of Fir Authorization
@@ -61,16 +84,22 @@ class FeedVC: UIViewController, UITableViewDataSource, UITableViewDelegate {
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 3
+        return 1
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let post = posts[indexPath.row]
         
-        return tableView.dequeueReusableCell(withIdentifier: "PostCell") as! PostCell
+        if let cell = tableView.dequeueReusableCell(withIdentifier: "PostCell") as? PostCell {
             
-
+            cell.configureCell(post: post)
+            return cell
+        } else {
+            
+            return PostCell()
+            
+        }
     }
     
     
