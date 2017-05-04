@@ -13,6 +13,9 @@ import Firebase
 class FeedVC: UIViewController, UITableViewDataSource, UITableViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var captionField: formatText!
+    
+    
     
     var posts = [Post]()
     var imagePicker: UIImagePickerController!
@@ -21,6 +24,8 @@ class FeedVC: UIViewController, UITableViewDataSource, UITableViewDelegate, UIIm
     //Setting a global variable for caching images
     static var imageCache: NSCache<NSString, UIImage> = NSCache()
     
+    //Variable to check if theres an image selected on posting image
+    var imageSelected = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,6 +63,7 @@ class FeedVC: UIViewController, UITableViewDataSource, UITableViewDelegate, UIIm
     
    
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        imageSelected = true
         if let image = info[UIImagePickerControllerEditedImage] as? UIImage {
             imageAdd.image = image
             
@@ -111,6 +117,45 @@ class FeedVC: UIViewController, UITableViewDataSource, UITableViewDelegate, UIIm
             
         }
     }
+    
+    //Uploading to Firebase Storage
+    @IBAction func postBtn(_ sender: Any) {
+        //guard > if its not true then do below
+        guard let post = captionField.text, post != "" else {
+            print ("KD: No text in captionfield")
+            return
+        }
+        //if there is no image then
+        guard let img = imageAdd.image, imageSelected == true else {
+            print ("KD: No image")
+            return
+        }
+        
+        //Condenses the image to 2MB
+        if let imgData = UIImageJPEGRepresentation(img, 0.2) {
+            
+            //getting a unique Identifier for image
+            let imgUID = NSUUID().uuidString
+            
+            //tells Firebase what kind of data it is
+            let metadata = FIRStorageMetadata()
+            metadata.contentType = "image/jpeg"
+            
+            
+            //Putting the Data to Firebase
+            DataServices.ds.REF_POST_IMAGES.child(imgUID).put(imgData, metadata: metadata) { (metadata, error) in
+                if error != nil {
+                    print ("KD: Failed to upload to Firebase")
+                } else {
+                    let downloadURL = metadata?.downloadURL()?.absoluteString
+                }
+                
+            }
+            
+        }
+        
+    }
+    
     
     
 }
