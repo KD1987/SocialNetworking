@@ -148,12 +148,38 @@ class FeedVC: UIViewController, UITableViewDataSource, UITableViewDelegate, UIIm
                     print ("KD: Failed to upload to Firebase")
                 } else {
                     let downloadURL = metadata?.downloadURL()?.absoluteString
+                    //call PostToFireBase
+                    self.postToFirebase(imgURL: downloadURL!)
                 }
                 
             }
             
         }
         
+    }
+    
+    func postToFirebase(imgURL: String) {
+        
+        //the keys must match what is shown in Firebase Storage
+        let post: Dictionary<String, AnyObject> = [
+            "caption": captionField.text! as AnyObject,
+            "imgURL": imgURL as AnyObject,
+            "likes": 0 as AnyObject
+        ]
+        
+        //posting to Firebase
+        
+        //Create an ID
+        let firebasePost = DataServices.ds.REF_POSTS.childByAutoId()
+        firebasePost.setValue(post)
+        
+        //Clear after posting
+        captionField.text = ""
+        imageSelected = false
+        imageAdd.image = UIImage(named: "add-image")
+        
+        //Reload the table so new post shows up
+        tableView.reloadData()
     }
     
     
